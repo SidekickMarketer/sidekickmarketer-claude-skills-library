@@ -318,7 +318,14 @@ For CMA (Instagram 12 posts):
 5. **Caption** - 100-150 words, brand voice aligned, with emojis
 6. **Hashtags** - 3-5 relevant hashtags (current best practice)
 7. **CTA** - Clear call-to-action (link in bio, call now, DM us, etc.)
-8. **Visual Notes** - Description of image/video needed
+8. **Design Spec** - Detailed creative direction (NEW):
+   - For carousels: Slide-by-slide breakdown (what photo + what text on each slide)
+   - For single images: Photo description + text overlay specifications
+   - For Reels: Simple scene breakdown (keep it straightforward, no complex production)
+   - Include: Text placement, size, color, mood, lighting notes
+9. **Photos Needed** - Specific shot list for photographer
+10. **Template** - Which Canva template to use (if templates exist)
+11. **Time Est** - Estimated time to create (helps with resource planning)
 
 **Trend Integration:**
 
@@ -357,6 +364,9 @@ As you generate content, actively incorporate findings from Step 1.5:
 - ✅ NO duplicate topics from past 3 months
 - ✅ Incorporate at least 2-3 current trends
 - ✅ Use current best practices (3-5 hashtags, etc.)
+- ✅ **NEW:** Provide actionable design specs (team knows exactly what to create)
+- ✅ **NEW:** Include specific shot lists (photographer knows what to capture)
+- ✅ **NEW:** Reference templates when available (speeds up execution)
 
 ---
 
@@ -364,15 +374,39 @@ As you generate content, actively incorporate findings from Step 1.5:
 
 **Generate CSV table with columns:**
 ```csv
-Date,Platform,Post Type,Content Theme,Caption,Hashtags,CTA,Visual Notes,Trend Note
+Date,Platform,Post Type,Content Theme,Caption,Hashtags,CTA,Design Spec,Photos Needed,Template,Time Est,Trend Note
 ```
 
-**Example Row:**
+**Column Definitions:**
+- **Date** - Post date
+- **Platform** - Instagram, Facebook, GBP
+- **Post Type** - Feed, Carousel, Reel, Story, Event, Offer
+- **Content Theme** - Which content pillar
+- **Caption** - Full post caption (ready to copy/paste)
+- **Hashtags** - 3-5 hashtags
+- **CTA** - Call to action
+- **Design Spec** - Detailed slide-by-slide or image layout instructions
+- **Photos Needed** - Shot list for photographer
+- **Template** - Which Canva template to use
+- **Time Est** - Estimated design time in minutes
+- **Trend Note** - Why this format/topic was chosen
+
+**Example Row (Carousel):**
 ```csv
-2025-12-01,Instagram,Carousel,Student Success,"🌟 STUDENT SPOTLIGHT: Emma's 6-month journey! Swipe to see her progress from first lesson to first recital. 'I was so nervous but Ms. Chen helped me feel confident!' Your journey starts here too! 🎹","#CMAStudents #PianoProgress #CincinnatiMusic","Link in bio to book your trial lesson","5-photo carousel: lesson 1, practice, rehearsal, performance, certificate","Carousel format trending - high engagement"
+2025-12-01,Instagram,Carousel,Student Success,"🌟 STUDENT SPOTLIGHT: Emma's 6-month journey! Swipe to see her progress from first lesson to first recital. 'I was so nervous but Ms. Chen helped me feel confident!' Your journey starts here too! 🎹","#CMAStudents #PianoProgress #CincinnatiMusic","Link in bio to book your trial lesson","SLIDE 1: Emma at piano | TEXT: '6 MONTHS AGO - She couldn't read music' (top, white bold) | SLIDE 2: Hands on keys | TEXT: 'TODAY - Playing Beethoven' (top) | SLIDE 3: Recital photo | TEXT: 'FIRST RECITAL ✨' (centered, large) | SLIDE 4: Certificate | TEXT: 'What's next? Grade 2 exam!' (top) | SLIDE 5: CTA graphic (no photo) | TEXT: 'Book your trial lesson' + CMA logo","1) Wide shot Emma at piano, warm lighting; 2) Close-up hands on keys; 3) Recital performance (have on file); 4) Emma holding certificate, proud smile","CMA_Student_Spotlight_Carousel","15 min","Carousel format trending - 1.4x engagement"
 ```
 
-**Note the "Trend Note" column** - documents WHY this post format/topic was chosen based on current trends.
+**Example Row (Single Image):**
+```csv
+2025-12-03,Instagram,Feed Post,Instructor Expertise,"Meet Mr. Thomas! 🎸 Teaching guitar for 15 years, specializing in rock, blues, and classical. 'Music isn't just notes—it's expression.' Book your trial lesson with Mr. Thomas today!","#MeetTheTeacher #GuitarLessons #CMAInstructors","Link in bio for trial lessons","IMAGE: Professional photo of Mr. Thomas with guitar | TEXT OVERLAY: 'Meet Mr. Thomas' (top, bold) | 'Guitar Instructor' (below name) | Use warm, professional lighting | Background: Studio, slightly blurred","Professional headshot of Mr. Thomas holding guitar, studio setting, warm lighting","CMA_Instructor_Spotlight_Single","10 min","Clean single-image posts performing well"
+```
+
+**Example Row (Reel - Keep Simple):**
+```csv
+2025-12-05,Instagram,Reel,Educational,"QUICK TIP TUESDAY 💡 Struggling with bow hold? Try this simple technique... [rest of caption]","#PracticeTips #ViolinLessons #QuickTips","Try it and tag us!","15-second video: Ms. Chen demonstrates correct bow hold | SCENE 1 (0-3s): Close-up violin/bow on stand, text 'Quick Tip Tuesday' | SCENE 2 (3-8s): Wrong way demo, text 'Common Mistake ❌' | SCENE 3 (8-13s): Right way demo, text 'Correct Technique ✅' | SCENE 4 (13-15s): Playing beautifully, text 'Try it!' | Keep simple - phone video is fine","Film Ms. Chen demonstrating bow hold - 4 angles, natural lighting, 20-minute shoot","CMA_Quick_Tip_Reel","20 min filming + 15 min editing","Short educational Reels getting high reach"
+```
+
+**Note:** Design Spec provides exact instructions for what goes on each slide/image so team knows exactly what to create.
 
 ---
 
@@ -754,13 +788,23 @@ Your choice: [1/2/3]
 ---
 
 **Skill Status:** ✅ Ready for Testing
-**Version:** 1.0
+**Version:** 1.1
 **Created:** November 14, 2025
+**Last Updated:** November 14, 2025
 **Maintained By:** Sidekick Marketer Operations Team
 
 ---
 
 ## Version History
+
+### v1.1 (November 14, 2025)
+- **Enhanced Creative Direction:** Added detailed design specifications
+- **NEW: Design Spec column** - Slide-by-slide carousel breakdowns, image layout specs
+- **NEW: Photos Needed column** - Specific shot lists for photographers
+- **NEW: Template column** - Reference to Canva templates
+- **NEW: Time Est column** - Design time estimates for resource planning
+- Simplified Reel specs (keep video production straightforward)
+- CSV output now production-ready with complete creative briefs
 
 ### v1.0 (November 14, 2025)
 - Initial release
