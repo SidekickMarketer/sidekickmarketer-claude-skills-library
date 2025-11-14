@@ -121,11 +121,11 @@ See `docs/testing-guide.md` for detailed testing procedures.
 ## 📚 Documentation
 
 Full documentation available in Google Drive:
-- **Location:** `/My Drive/02_Master_Documents_Hub/Claude_AI_Documentation/`
+- **Location:** `/My Drive/01_Sidekick Marketer/3. AI_Automation/01_Claude_Skills/docs/`
 - **Files:**
   - `CMA_CLAUDE_SKILLS_PLAN.md` - Project overview
-  - `CLAUDE_DATA_INTEGRATION_COMPLETE.md` - Setup guide
-  - `CLAUDE_QUICK_REFERENCE.md` - Cheat sheet
+  - `CMA_AUDIT_FINDINGS.md` - Client audit findings
+  - `01_Quick_Start/`, `02_Reference_Guides/`, `03_Workflow_Templates/` - Detailed guides
 
 ---
 
