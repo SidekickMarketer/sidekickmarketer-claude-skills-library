@@ -6,32 +6,44 @@ Monorepo for all Sidekick Marketer Claude Skills: Social media, paid ads, brandi
 
 ### ✅ Active Skills
 
-#### 1. Social Media Strategy Audit
-- **File:** `skills/social-media-strategy-audit.md`
-- **Purpose:** Analyze existing social media strategy and execution to identify gaps and optimization opportunities
-- **Scope:** Social media channels ONLY (Instagram, Facebook, TikTok, LinkedIn, GBP, etc.)
-- **Status:** v1.0 - Ready for Testing
+#### 1. Sidekick Social Audit (Full-History)
+- **File:** `skills/sidekick-social-audit/` (SKILL.md + template)
+- **Purpose:** Forensic audit of a client's complete social media history. Analyzes long-term trends, seasonality, platform ROI, and format effectiveness within Sidekick's photo-first service model.
+- **Scope:** Social media channels (Instagram, Facebook, GBP) with full historical context
+- **Status:** v3.1.0 - Production Ready
 - **Created:** November 21, 2025
 - **Last Updated:** November 21, 2025
 
 **Features:**
-- Compares stated strategy vs actual execution
-- Analyzes content pillar distribution (Student Success 30%, Instructor 25%, etc.)
-- Checks SOW compliance (12 IG + 4 FB + 4 GBP delivered?)
-- Evaluates template effectiveness
-- Performance pattern analysis (if analytics available)
-- Platform mix optimization
-- Generates actionable recommendations and client questions
+- **Timeline Analysis:** Full history to identify growth trajectory + seasonality
+- **"Hall of Fame":** Top-performing posts from entire history with reboot potential
+- **Format Forensics:** Static vs Carousel performance (photo-first focused)
+- **Platform ROI:** Engagement + business value per platform
+- **Content Pillar Drift:** Stated vs actual distribution with rebalancing recommendations
+- **Service Model Aware:** Doesn't recommend video-first strategies outside Sidekick's offering
+- **90-Day Action Plan:** Specific, phased implementation roadmap
+
+**What Makes This "Top 1%":**
+- Uses ENTIRE history (not just recent months) for macro trends
+- Focuses last 12 months for technical/algorithm analysis
+- Separates logic (SKILL.md) from deliverable (template)
+- Ruthlessly data-driven with exact percentages
+- Stays within Sidekick's scalable service model
 
 **Usage:**
 ```
-"Audit Cincinnati Music Academy's social media strategy"
-"Social media strategy audit for CMA"
-"Analyze CMA's social content performance"
+"Run sidekick-social-audit for Cincinnati Music Academy"
+Parameters: client_name, client_folder_path
 ```
 
-**Use Before:** Running Social Content Generator for first time
-**Does NOT Audit:** Paid ads, email marketing, SEO, or website performance
+**Output:** Complete diagnostic report ready to send to client
+
+**Use Before:**
+- Running Social Content Generator for first time
+- Major strategy pivots
+- Quarterly strategy reviews
+
+**Replaces:** social-media-strategy-audit.md (legacy - now deprecated)
 
 ---
 
@@ -81,7 +93,7 @@ cd ~/projects
 git clone https://github.com/SidekickMarketer/sidekickmarketer-claude-skills-library.git
 
 # Create symlinks
-ln -s ~/projects/sidekickmarketer-claude-skills-library/skills/social-media-strategy-audit.md ~/.claude/skills/social-media-strategy-audit.md
+ln -s ~/projects/sidekickmarketer-claude-skills-library/skills/sidekick-social-audit ~/.claude/skills/sidekick-social-audit
 ln -s ~/projects/sidekickmarketer-claude-skills-library/skills/social-content-generator.md ~/.claude/skills/social-content-generator.md
 
 # Verify
@@ -104,8 +116,12 @@ sidekickmarketer-claude-skills-library/
 ├── README.md                          ← You are here
 ├── CHANGELOG.md                       ← Version history
 ├── skills/                            ← Active skills
-│   ├── social-media-strategy-audit.md
-│   └── social-content-generator.md
+│   ├── sidekick-social-audit/         ← Full-history audit (v3.1.0)
+│   │   ├── SKILL.md                   ← Logic engine
+│   │   └── resources/
+│   │       └── social_audit_matrix.md ← Report template
+│   ├── social-content-generator.md    ← Monthly content creation
+│   └── social-media-strategy-audit.md ← DEPRECATED (use sidekick-social-audit)
 ├── docs/                              ← Documentation
 │   ├── skill-development-guide.md
 │   ├── testing-guide.md
@@ -197,5 +213,5 @@ Questions or issues? Contact:
 ---
 
 **Last Updated:** November 21, 2025
-**Active Skills:** 2
+**Active Skills:** 2 (+ 1 deprecated)
 **Skills in Development:** 1+
