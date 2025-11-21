@@ -6,11 +6,37 @@ Monorepo for all Sidekick Marketer Claude Skills: Social media, paid ads, brandi
 
 ### ✅ Active Skills
 
-#### 1. Social Content Generator
+#### 1. Strategy Audit
+- **File:** `skills/strategy-audit.md`
+- **Purpose:** Analyze existing social media strategy and execution to identify gaps and optimization opportunities
+- **Status:** v1.0 - Ready for Testing
+- **Created:** November 21, 2025
+- **Last Updated:** November 21, 2025
+
+**Features:**
+- Compares stated strategy vs actual execution
+- Analyzes content pillar distribution
+- Checks SOW compliance
+- Evaluates template effectiveness
+- Performance pattern analysis (if analytics available)
+- Generates actionable recommendations and client questions
+
+**Usage:**
+```
+"Audit Cincinnati Music Academy's social media strategy"
+"Analyze CMA's content performance and strategy"
+"Strategy audit for [Client Name]"
+```
+
+**Use Before:** Running Social Content Generator for first time
+
+---
+
+#### 2. Social Content Generator
 - **File:** `skills/social-content-generator.md`
 - **Purpose:** Generate monthly social media content calendars for clients
 - **Platforms:** Instagram, Facebook, Google Business Profile
-- **Status:** v1.0 - Ready for Testing
+- **Status:** v1.1 - Ready for Testing
 - **Created:** November 14, 2025
 - **Last Updated:** November 14, 2025
 
@@ -18,6 +44,7 @@ Monorepo for all Sidekick Marketer Claude Skills: Social media, paid ads, brandi
 - Tiered freshness checking (auto-updates for trends)
 - Brand voice alignment from client strategy docs
 - Trend integration (viral formats, trending audio, local events)
+- Enhanced creative direction (slide-by-slide specs, photo lists)
 - CSV + markdown summary output
 - Avoids content duplication (checks past 3-6 months)
 
@@ -27,11 +54,13 @@ Monorepo for all Sidekick Marketer Claude Skills: Social media, paid ads, brandi
 "Create January Instagram posts for [Client]"
 ```
 
+**Use After:** Running Strategy Audit to validate approach
+
 ---
 
 ### 🔄 In Development
 
-#### 2. Performance Reporter (Planned)
+#### 3. Performance Reporter (Planned)
 - Monthly performance report generation
 - Analytics integration
 - Insights and recommendations
@@ -49,6 +78,7 @@ cd ~/projects
 git clone https://github.com/SidekickMarketer/sidekickmarketer-claude-skills-library.git
 
 # Create symlinks
+ln -s ~/projects/sidekickmarketer-claude-skills-library/skills/strategy-audit.md ~/.claude/skills/strategy-audit.md
 ln -s ~/projects/sidekickmarketer-claude-skills-library/skills/social-content-generator.md ~/.claude/skills/social-content-generator.md
 
 # Verify
@@ -71,6 +101,7 @@ sidekickmarketer-claude-skills-library/
 ├── README.md                     ← You are here
 ├── CHANGELOG.md                  ← Version history
 ├── skills/                       ← Active skills
+│   ├── strategy-audit.md
 │   └── social-content-generator.md
 ├── docs/                         ← Documentation
 │   ├── skill-development-guide.md
@@ -110,6 +141,9 @@ See `docs/testing-guide.md` for detailed testing procedures.
 ---
 
 ## 🔄 Maintenance Schedule
+
+### Strategy Audit
+- **Skill Review:** Every 90 days - Next: February 21, 2026
 
 ### Social Content Generator
 - **Trend Check:** Auto-performed on each run (7 days)
@@ -159,6 +193,6 @@ Questions or issues? Contact:
 
 ---
 
-**Last Updated:** November 14, 2025
-**Active Skills:** 1
+**Last Updated:** November 21, 2025
+**Active Skills:** 2
 **Skills in Development:** 1+
