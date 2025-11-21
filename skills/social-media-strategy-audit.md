@@ -4,12 +4,15 @@
 **Created:** November 21, 2025
 **Purpose:** Analyze existing social media strategy and execution to identify gaps, patterns, and optimization opportunities
 **Use Case:** Run before automating content generation to validate strategy is optimal
+**Scope:** Social Media ONLY (Instagram, Facebook, TikTok, LinkedIn, GBP, etc.)
+
+⚠️ **Note:** This skill audits ONLY social media channels. For paid ads, email, or SEO audits, use separate channel-specific skills.
 
 ---
 
 ## 📋 Description
 
-This skill performs a comprehensive audit of a client's social media strategy by analyzing:
+This skill performs a comprehensive audit of a client's **social media strategy** by analyzing:
 - Stated strategy vs actual execution
 - Content pillar distribution
 - Platform mix and posting frequency
@@ -32,9 +35,10 @@ This skill performs a comprehensive audit of a client's social media strategy by
 
 **Trigger Phrases:**
 - "Audit [Client Name]'s social media strategy"
-- "Analyze [Client Name]'s content performance and strategy"
-- "Review what [Client Name] has been posting"
-- "Strategy audit for [Client Name]"
+- "Social media strategy audit for [Client Name]"
+- "Analyze [Client Name]'s social content performance"
+- "Review [Client Name]'s social media execution"
+- "Validate social strategy for [Client Name]"
 
 ---
 

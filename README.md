@@ -6,29 +6,32 @@ Monorepo for all Sidekick Marketer Claude Skills: Social media, paid ads, brandi
 
 ### ✅ Active Skills
 
-#### 1. Strategy Audit
-- **File:** `skills/strategy-audit.md`
+#### 1. Social Media Strategy Audit
+- **File:** `skills/social-media-strategy-audit.md`
 - **Purpose:** Analyze existing social media strategy and execution to identify gaps and optimization opportunities
+- **Scope:** Social media channels ONLY (Instagram, Facebook, TikTok, LinkedIn, GBP, etc.)
 - **Status:** v1.0 - Ready for Testing
 - **Created:** November 21, 2025
 - **Last Updated:** November 21, 2025
 
 **Features:**
 - Compares stated strategy vs actual execution
-- Analyzes content pillar distribution
-- Checks SOW compliance
+- Analyzes content pillar distribution (Student Success 30%, Instructor 25%, etc.)
+- Checks SOW compliance (12 IG + 4 FB + 4 GBP delivered?)
 - Evaluates template effectiveness
 - Performance pattern analysis (if analytics available)
+- Platform mix optimization
 - Generates actionable recommendations and client questions
 
 **Usage:**
 ```
 "Audit Cincinnati Music Academy's social media strategy"
-"Analyze CMA's content performance and strategy"
-"Strategy audit for [Client Name]"
+"Social media strategy audit for CMA"
+"Analyze CMA's social content performance"
 ```
 
 **Use Before:** Running Social Content Generator for first time
+**Does NOT Audit:** Paid ads, email marketing, SEO, or website performance
 
 ---
 
@@ -78,7 +81,7 @@ cd ~/projects
 git clone https://github.com/SidekickMarketer/sidekickmarketer-claude-skills-library.git
 
 # Create symlinks
-ln -s ~/projects/sidekickmarketer-claude-skills-library/skills/strategy-audit.md ~/.claude/skills/strategy-audit.md
+ln -s ~/projects/sidekickmarketer-claude-skills-library/skills/social-media-strategy-audit.md ~/.claude/skills/social-media-strategy-audit.md
 ln -s ~/projects/sidekickmarketer-claude-skills-library/skills/social-content-generator.md ~/.claude/skills/social-content-generator.md
 
 # Verify
@@ -98,19 +101,19 @@ cp skills/*.md ~/.claude/skills/
 
 ```
 sidekickmarketer-claude-skills-library/
-├── README.md                     ← You are here
-├── CHANGELOG.md                  ← Version history
-├── skills/                       ← Active skills
-│   ├── strategy-audit.md
+├── README.md                          ← You are here
+├── CHANGELOG.md                       ← Version history
+├── skills/                            ← Active skills
+│   ├── social-media-strategy-audit.md
 │   └── social-content-generator.md
-├── docs/                         ← Documentation
+├── docs/                              ← Documentation
 │   ├── skill-development-guide.md
 │   ├── testing-guide.md
 │   └── testing-log.md
-├── examples/                     ← Sample outputs
+├── examples/                          ← Sample outputs
 │   ├── sample-outputs/
 │   └── sample-inputs/
-└── templates/                    ← Skill templates
+└── templates/                         ← Skill templates
     └── new-skill-template.md
 ```
 
@@ -142,7 +145,7 @@ See `docs/testing-guide.md` for detailed testing procedures.
 
 ## 🔄 Maintenance Schedule
 
-### Strategy Audit
+### Social Media Strategy Audit
 - **Skill Review:** Every 90 days - Next: February 21, 2026
 
 ### Social Content Generator
