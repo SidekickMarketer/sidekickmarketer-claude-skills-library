@@ -1,25 +1,14 @@
 ---
 name: sidekick-social-audit
-description: A rigorous, deep-dive technical audit of a client's entire social media history. Analyzes long-term trends, seasonality, platform mix, and format effectiveness within Sidekick's photo-first service model to generate strategic pivots.
-version: 3.1.0
-input_schema:
-  properties:
-    client_name:
-      type: string
-      description: The name of the client (e.g., "Cincinnati Music Academy")
-    client_folder_path:
-      type: string
-      description: The absolute path to the client's data folder (e.g., "/path/to/client-cma/")
-  required: [client_name, client_folder_path]
-tools: [list_files, read_file, search_files]
+description: Rigorous forensic audit of client social media history analyzing long-term trends, seasonality, platform mix, and format effectiveness within Sidekick's photo-first service model. Use when conducting social media audits, performance analysis, or strategy pivots for any Sidekick Marketer client. Works with standardized client folder structure (Google Drive or local paths).
 ---
 
 # Sidekick Marketer: Full-History Social Audit
 
 ## Objective
-You are the Lead Strategist for **Sidekick Marketer**. Your job is to perform a forensic audit of `{{client_name}}`'s social media history. You must move beyond "vanity metrics" to identify the specific mechanics driving business results **within Sidekick's photo-first service model**.
+Perform a forensic audit of a client's social media history. Move beyond "vanity metrics" to identify the specific mechanics driving business results **within Sidekick's photo-first service model**.
 
-**Scope:** Review the **ENTIRE** available history to understand the brand's trajectory, but weight the *technical* analysis (formats/algorithms) toward the last 6-12 months.
+**Scope:** Review the **ENTIRE** available history to understand trajectory, but weight *technical* analysis (formats/algorithms) toward the last 6-12 months.
 
 **Service Model Context:** Sidekick operates a photo-first content strategy optimized for small businesses:
 - High-quality designed graphics and carousels
@@ -27,81 +16,187 @@ You are the Lead Strategist for **Sidekick Marketer**. Your job is to perform a 
 - No daily Stories or video-first strategy
 - Focus on scalable, template-driven content
 
+## Input Requirements
+
+**User must provide ONE of:**
+- `google_drive_folder_url: "https://drive.google.com/drive/folders/[id]"` 
+- `client_folder_path: "/path/to/client-folder/"`
+
+**Optional:**
+- `client_name: "[Client Name]"` (if not provided, infer from folder name or CLIENT_PROFILE.md)
+
+## Expected Folder Structure
+
+This skill expects clients to use Sidekick's standardized folder structure:
+
+```
+client-[name]/
+├── 00_[CLIENT]_CLIENT_PROFILE.md
+└── 07_Social_Media/
+    ├── 00_SOCIAL_STRATEGY.md
+    ├── 01_Content_Calendars/
+    │   └── YYYY-MM_Content_Calendar.csv
+    ├── 02_Performance_Data/
+    │   └── Platform_Analytics_YYYY_Q#.csv
+    ├── 03_Post_Archive/
+    │   └── YYYY-MM_Platform_Posts.pdf
+    └── 04_Audit_Reports/
+```
+
+**If structure is non-standard:** Use `scripts/validate_folder_structure.py` to check setup, then attempt adaptive discovery.
+
 ## Phase 1: Archeology (Data Ingest)
 
-### Step 1: Scan the Client Folder
-Activate tools to scan `{{client_folder_path}}`.
+### Step 1: Validate Folder Structure
 
-**Look for:**
-- `00_*_CLIENT_PROFILE.md` or similar (brand voice, target audience, SOW)
-- `*Strategy*.md` files (stated content strategy)
-- `*/01_Content_Calendars/` or `*/Content_Calendars/` (historical posts)
-- `*/02_Performance_Data/` or `*/Analytics/` (metrics files)
-- Any CSV, XLSX, or PDF files with "analytics" or "performance" in name
+**Run validation script:**
+```bash
+python scripts/validate_folder_structure.py --path {{client_folder_path}}
+```
 
-### Step 2: Establish Baseline
-Search for files defining "Strategy", "Pillars", "Content Pillars", or "SOW".
+**If validation passes:**
+- Proceed with standardized file paths
+- All expected files are present
 
-**If found:**
-- Extract the stated content pillar distribution (e.g., "30% Student Success, 25% Instructor Expertise")
-- Extract posting frequency commitments (e.g., "12 IG + 4 FB + 4 GBP per month")
-- Extract any KPI targets (e.g., "4% engagement rate minimum")
+**If validation fails:**
+- Review validation output for missing files/folders
+- Attempt adaptive discovery (search by keywords)
+- Document gaps in final report Appendix
 
-**If NOT found:**
-- You must infer the strategy based on what they actually posted
-- Document this as: "No written strategy found - strategy inferred from execution"
+### Step 2: Access the Client Folder
 
-### Step 3: Determine Service Model
-Check the SOW or Client Profile for:
-- **Original SOW deliverables** (what was contracted)
-- **Current deliverables** (what's actually being delivered)
-- **Format breakdown** (Is this photo-first? Video-first? Mixed?)
+**For Google Drive URLs:**
+```
+1. Extract folder ID from URL
+2. Use google_drive_fetch to view folder structure
+3. Use google_drive_search to find files within 07_Social_Media/
+```
 
-**Default assumption for Sidekick clients:**
-- Photo-first content strategy
-- 1 monthly recap Reel (photo montage)
-- No daily Stories commitment
-- Focus on single images + carousels
+**For local paths:**
+```
+1. Use view tool to scan directory structure
+2. Use view to read specific files
+```
 
-### Step 4: Data Freshness Check
-**Before proceeding:**
-- Identify the date range of available data
-- Flag if most recent data is >3 months old
-- If data is stale, note in report: "⚠️ Analysis based on data through [DATE]. Recommend exporting current month before implementing changes."
+### Step 3: Load Client Profile
+
+**Read:** `00_[CLIENT]_CLIENT_PROFILE.md`
+
+**Extract:**
+- Client name (if not provided by user)
+- Business type and target audience
+- Current service deliverables
+- Client start date
+
+**If file is missing:**
+- Attempt to infer client name from folder name
+- Flag in report: "⚠️ Client profile missing. Recommend creating one."
+
+### Step 4: Load Social Strategy
+
+**Read:** `07_Social_Media/00_SOCIAL_STRATEGY.md`
+
+**Extract:**
+- Content pillar distribution with target percentages
+- Posting frequency commitments by platform
+- KPI targets (engagement rate, reach growth, conversions)
+
+**If file is missing:**
+- Flag in report: "⚠️ No documented strategy found"
+- Infer strategy from actual execution
+- Recommend creating strategy document
+
+### Step 5: Inventory Available Data
+
+**Scan subdirectories:**
+
+**01_Content_Calendars/:**
+- List all CSV files matching `YYYY-MM_Content_Calendar.csv`
+- Identify date range (earliest to latest month)
+- Count total posts
+
+**02_Performance_Data/:**
+- List all analytics files (CSV, XLSX)
+- Identify platforms covered (Instagram, Facebook, GBP)
+- Check for quarterly vs. monthly exports
+
+**03_Post_Archive/:**
+- List all PDF files
+- Note if PDFs are available for analysis
+
+**Output summary:**
+```
+Data Inventory:
+✅ Content Calendars: 12 months (Jan 2024 - Dec 2024)
+✅ Instagram Analytics: Q1-Q4 2024
+✅ Facebook Analytics: Q1-Q4 2024
+✅ GBP Analytics: Monthly Jan-Dec 2024
+⚠️ Post Archive PDFs: Only 6 months available
+```
+
+### Step 6: Data Freshness Check
+
+**Calculate:**
+- Earliest data date
+- Latest data date
+- Months of data available
+
+**If most recent data is >3 months old:**
+- Flag in report: "⚠️ Analysis based on data through [DATE]. Recommend exporting current month before implementing changes."
 
 ## Phase 2: The Macro Analysis (The "Timeline")
 
-Look at the big picture by analyzing the **full history** available:
+Analyze the **full history** available to understand long-term trajectory:
 
 ### Growth Trajectory
-Compare earliest available data vs. most recent data:
-- **Follower growth:** Year 1 vs. Current Year
-- **Engagement trends:** Are people interacting more or less over time?
-- **Post volume:** Has consistency improved or declined?
 
-**Output:** `📈 Trending Up` / `➡️ Flat` / `📉 Trending Down`
+**Calculate year-over-year (or period-over-period) changes:**
+- Follower growth: Start vs. End
+- Average engagement rate: Early period vs. Recent period
+- Post volume: Has consistency improved?
+
+**Categorize:**
+- 📈 **Trending Up:** Growth >15% YoY
+- ➡️ **Flat:** Growth -5% to +15% YoY
+- 📉 **Trending Down:** Growth <-5% YoY
+
+**Analysis points:**
+- What changed between high and low periods?
+- Did posting frequency impact growth?
+- External factors (seasonality, campaigns, etc.)?
 
 ### Seasonality Detection
-Identify recurring patterns:
-- Which months show engagement spikes? (e.g., "November/December holidays")
-- Which months show valleys? (e.g., "July/August summer slump")
-- Are there business-specific patterns? (e.g., "Back-to-school surge in August")
+
+**Use:** `scripts/detect_seasonality.py` (if available) OR manual pattern analysis
+
+**Identify:**
+- Peak months (highest engagement/reach)
+- Valley months (lowest engagement/reach)
+- Business-specific patterns (e.g., "Back-to-school surge")
+
+**Document implications:**
+- Should we adjust posting frequency during valleys?
+- Can we amplify successful seasonal content?
+- Are there untapped seasonal opportunities?
 
 ### The "Hall of Fame"
-Identify the **Top 5-10 posts** from the *entire history*:
-- Sort all posts by engagement (likes + comments + shares + saves)
-- For each Hall of Fame post, document:
-  - **Date** (to show if it's recent or historical)
-  - **Metric** (e.g., "5,000 views, 200 saves")
-  - **Theme/Format** (e.g., "Behind-the-scenes carousel")
-  - **Why it worked** (your analysis)
-  - **Reboot potential** (can this concept be refreshed?)
 
-**Key insight:** Is there an "Old Gold" concept that worked 2 years ago that should be rebooted with current formats?
+**Sort all posts by total engagement:**
+- Total engagement = likes + comments + shares + saves
+- Identify Top 5-10 posts from entire history
+
+**For each Hall of Fame post:**
+- **Date:** When was it posted?
+- **Metric:** Exact numbers (e.g., "5,000 views, 200 saves")
+- **Theme/Format:** What was it about? (carousel, single image, topic)
+- **Why it worked:** Your analysis of the success factors
+- **Reboot potential:** Can this concept be refreshed and reposted?
+
+**Key insight:** Look for "Old Gold" concepts from 1-2 years ago that could be rebooted with current formats.
 
 ## Phase 3: The Technical Deep Dive (The "Mechanics")
 
-Analyze the **last 6-12 months** of content to determine current algorithm fit:
+Analyze the **last 6-12 months** of content for current algorithm fit:
 
 ### A. Format Forensics (Photo-First Analysis)
 
@@ -111,15 +206,18 @@ Analyze the **last 6-12 months** of content to determine current algorithm fit:
 3. **Monthly Recap Reel** (photo montage - service deliverable)
 4. **Text-Only** (rare, but note if present)
 
-**Calculate per format:**
+**For each format, calculate:**
 - Average engagement rate
-- % of total feed
+- Percentage of total feed
 - Best-performing examples
+- Worst-performing examples
 
-**Analysis Focus:**
+**Analysis questions:**
 - ✅ Do carousels outperform single images?
 - ✅ Are longer carousels (8-10 slides) better than short ones (2-3)?
 - ✅ Is the monthly Reel driving engagement or just a formality?
+- ✅ Do posts with faces outperform product/location shots?
+- ✅ Do text overlays impact performance?
 
 **What NOT to flag:**
 - ❌ "Need more Reels" (not part of service model)
@@ -133,99 +231,162 @@ Analyze the **last 6-12 months** of content to determine current algorithm fit:
 
 ### B. Platform Mix & ROI Analysis
 
-Calculate volume distribution across platforms:
-- Instagram: X posts/month
-- Facebook: X posts/month
-- Google Business Profile: X posts/month
-- Other: X posts/month
+**Calculate volume distribution:**
+- Instagram: X posts/month (% of total)
+- Facebook: X posts/month (% of total)
+- Google Business Profile: X posts/month (% of total)
 
-**For each platform, calculate:**
+**For each platform:**
 - Volume (% of total posts)
-- Engagement rate (if data available)
+- Average engagement rate
 - Business ROI (inquiries, bookings, if tracked)
+- Platform health (growing, stable, declining)
 
-**Analysis:**
-- Are they over-investing in a dying platform? (e.g., "60% of effort on Facebook, 5% engagement rate")
-- Is there a winner being under-utilized? (e.g., "Instagram drives 80% of inquiries with only 40% of posts")
+**Strategic questions:**
+- Are we over-investing in a dying platform?
+- Is there a winner being under-utilized?
+- Should we reallocate effort based on ROI?
+
+**Example findings:**
+- "60% of effort on Facebook, but only 5% engagement rate" → Reduce
+- "Instagram drives 80% of inquiries with 40% of posts" → Increase
 
 ### C. Content Pillar Distribution
 
-**Tag posts by theme:**
-- Review content calendars or captions
-- Categorize into themes (e.g., "Student Success", "Educational", "Promotional", "Behind-the-Scenes")
+**Tag posts by theme using content calendar data:**
+- Review "Pillar" column in content calendars
+- Categorize each post into documented pillars
+- Calculate actual distribution
 
 **Compare actual vs. stated strategy:**
-- Stated: "30% Student Success, 25% Instructor, 20% Educational, 15% Community, 10% Promotional"
-- Actual: "10% Student Success, 60% Promotional, 30% Other"
+```
+Stated:  30% Student Success | 25% Instructor | 20% Educational | 15% Community | 10% Promotional
+Actual:  10% Student Success | 60% Promotional | 30% Other
+```
 
-**Balance check:**
-- Is the feed 90% promotional? (Red flag - audience tunes out)
-- Is there enough "value" content? (Educational, inspirational)
-- Are they featuring enough human stories? (Students, staff, community)
+**Balance assessment:**
+- Is the feed 90% promotional? (Red flag - audience fatigue)
+- Is there enough value content? (Educational, inspirational)
+- Are human stories featured enough? (Students, staff, community)
 
-### D. Caption & Creative Analysis
+**For each pillar:**
+- Target % vs. Actual %
+- Performance (engagement rate vs. overall average)
+- Analysis (is this pillar working? Over/under-represented?)
 
-**If data available, check:**
-- Average caption length
-- Hashtag usage (quantity, relevance)
-- CTA effectiveness (are people clicking/calling?)
-- Visual consistency (brand colors, fonts, photo quality)
+### D. Visual & Creative Patterns
+
+**If post archive PDFs are available:**
+
+Use `view` tool to examine sample posts for visual patterns:
+- Brand consistency (colors, fonts, layouts)
+- Photo quality (professional vs. casual)
+- Text overlay usage and effectiveness
+- Human presence (faces vs. objects)
+
+**If analytics include saves/shares:**
+- High saves = utility content (educational, how-to)
+- High shares = emotional content (inspirational, relatable)
+- High comments = conversation starters (questions, controversial)
 
 ## Phase 4: The Report
 
-Load `resources/social_audit_matrix.md` and fill it with your findings.
+**Load template:** `references/social_audit_matrix.md`
 
-**Before filling the template:**
+**Before filling:**
 1. Calculate `{{start_date}}` = earliest file date found
 2. Calculate `{{end_date}}` = latest file date found
-3. Calculate `{{data_months}}` = number of months of data analyzed
-4. Replace ALL `{{placeholders}}` in the template with actual data
+3. Calculate `{{data_months}}` = number of months analyzed
+4. Set `{{report_date}}` = today's date
 
-**Report Writing Rules:**
-1. **Be Ruthless:** If a format isn't working, say "Stop doing this"
-2. **Be Specific:** Use exact numbers (e.g., "Shift 50% of single-image posts to carousels")
-3. **Show the "Why":** Always explain *why* something worked (e.g., "High saves indicate utility content")
-4. **Stay in Service Model:** Don't recommend things Sidekick doesn't offer
-5. **Prioritize:** List recommendations in order of expected impact
+**Replace ALL {{placeholders}} with actual data:**
+- Use specific numbers (not "many" or "some")
+- Use exact percentages (e.g., "43.2%", not "about 40%")
+- Include dates for Hall of Fame posts
+- Fill all tables completely
+
+**Report Writing Guidelines:**
+- Use exact numbers and specific recommendations (e.g., "Shift carousel mix from 20% → 60%")
+- Explain mechanism behind each finding (e.g., "High saves = utility content")
+- Stay within photo-first service model constraints
+- Prioritize by expected impact; be direct about what's broken
+- Celebrate what IS working before critiquing
 
 **Tone:**
 - Direct, confident, data-driven
 - No fluff or vague advice
 - Call out what's not working
-- Celebrate what IS working
+- Celebrate wins
 
 ## Phase 5: Deliver the Report
 
-Output the completed `social_audit_matrix.md` with all placeholders filled.
+**Output the completed report:**
+```markdown
+[Paste entire filled social_audit_matrix.md content]
+```
 
 **Final checklist:**
 - ✅ All {{placeholders}} replaced with real data
 - ✅ Specific numbers in every recommendation
-- ✅ "Hall of Fame" posts identified with dates
-- ✅ Format forensics table complete
-- ✅ Strategic pivot section is actionable
+- ✅ "Hall of Fame" posts identified with dates and metrics
+- ✅ Format forensics table complete with percentages
+- ✅ Strategic pivot section is actionable (not vague)
 - ✅ Red flags are technical and fixable
+- ✅ 90-day action plan has specific tasks
 - ✅ Report is ready to send to client
+
+**Save report to:**
+`07_Social_Media/04_Audit_Reports/YYYY-MM_Social_Audit.md`
+
+---
+
+## Handling Edge Cases
+
+### Missing Strategy Documentation
+**If 00_SOCIAL_STRATEGY.md doesn't exist:**
+- Infer content pillars from actual posts (group by theme)
+- Document: "No written strategy found - strategy inferred from execution"
+- Recommend creating strategy document going forward
+
+### Incomplete Analytics Data
+**If analytics are partial or missing:**
+- Perform qualitative-only analysis on available posts
+- Document: "Quantitative analysis limited due to data gaps"
+- Recommend setting up proper analytics exports
+
+### Non-Standard File Naming
+**If files don't match expected patterns:**
+- Use adaptive search (search for keywords: "calendar", "analytics", "performance")
+- Document actual structure in Appendix
+- Suggest standardization for future audits
+
+### Mixed Date Ranges
+**If content calendars and analytics don't align:**
+- Use the overlap period for quantitative analysis
+- Note discrepancies in Data Quality section
+- Use full calendar history for qualitative patterns
 
 ---
 
 ## Example Execution Flow
 
-**User says:** "Audit Cincinnati Music Academy"
-**User provides:** `client_name: "Cincinnati Music Academy"`, `client_folder_path: "/path/to/client-cma/"`
+**User says:** "Run social audit for Cincinnati Music Academy"
+**User provides:** `google_drive_folder_url: "https://drive.google.com/drive/folders/1abc123"`
 
 **You do:**
-1. Scan `/path/to/client-cma/` for data files
-2. Read `00_CMA_CLIENT_PROFILE.md` for strategy
-3. Read content calendars from `06_Social_Media/01_Content_Calendars/`
-4. Read analytics from `06_Social_Media/02_Performance_Data/`
-5. Analyze full history for macro trends
-6. Analyze last 12 months for format performance
-7. Fill in `social_audit_matrix.md` template
-8. Output completed report
+1. Validate folder structure with `scripts/validate_folder_structure.py`
+2. Use `google_drive_fetch` to access folder
+3. Read `00_CMA_CLIENT_PROFILE.md` for client context
+4. Read `07_Social_Media/00_SOCIAL_STRATEGY.md` for documented strategy
+5. Inventory files in `01_Content_Calendars/`, `02_Performance_Data/`, `03_Post_Archive/`
+6. Analyze full history for macro trends (Phase 2)
+7. Analyze last 12 months for format performance (Phase 3)
+8. Fill `references/social_audit_matrix.md` with findings
+9. Output completed report
+10. Save to `07_Social_Media/04_Audit_Reports/`
 
 **Do NOT:**
-- Skip any phases
+- Skip validation step
 - Make assumptions without data
 - Recommend video-first strategies
 - Recommend things outside Sidekick's service model
@@ -234,5 +395,6 @@ Output the completed `social_audit_matrix.md` with all placeholders filled.
 **DO:**
 - Use actual numbers from the data
 - Identify specific winning posts to replicate
-- Call out what's broken
-- Give exact percentages for reallocation (e.g., "40% carousels → 60% carousels")
+- Call out what's broken with technical fixes
+- Give exact percentages for format reallocation
+- Stay within photo-first service constraints
