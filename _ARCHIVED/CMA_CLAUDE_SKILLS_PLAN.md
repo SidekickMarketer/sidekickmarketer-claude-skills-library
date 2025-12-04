@@ -65,7 +65,7 @@ Building Claude Skills to automate monthly social media content generation and p
 **Notion MCP:**
 - Just added to `.claude.json` (lines 65-74)
 - User needs to restart Claude Code to activate
-- Integration token: `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`
+- Integration token: `[REDACTED]`
 - Page access granted by user
 
 **Documentation Created:**
