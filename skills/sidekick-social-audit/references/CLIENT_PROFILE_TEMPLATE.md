@@ -1,151 +1,256 @@
-# Client Profile: [CLIENT NAME]
+# {{CLIENT_NAME}} - Client Profile
+**For Use by Claude Skills & Automation**
 
-**Last Updated:** [DATE]
-**Account Manager:** [YOUR NAME]
-**Active Since:** [START DATE]
-
----
-
-## Business Overview
-
-### Business Type
-[Industry/vertical - e.g., Music education, Landscaping, Auction marketplace, etc.]
-
-### Service Area
-[Geographic coverage - e.g., Greater Cincinnati, OH | Nationwide shipping | etc.]
-
-### Business Description
-[2-3 sentence description of what the client does and what makes them unique]
+**Created:** {{DATE}}
+**Last Updated:** {{DATE}}
+**Status:** Active Client
+**Account Manager:** {{ACCOUNT_MANAGER}}
 
 ---
 
-## Target Audience
+## 1. Business Core [REQUIRED]
 
-### Primary Audience
-- **Demographics:** [Age range, income level, location]
-- **Psychographics:** [Values, interests, pain points]
-- **Example persona:** [e.g., "Parents of kids ages 5-12 looking for music education"]
+| Field | Value |
+|-------|-------|
+| **Client Name** | {{CLIENT_NAME}} |
+| **Short Code** | {{SHORT_CODE}} |
+| **Industry** | {{INDUSTRY}} |
+| **Founded** | {{YEAR_FOUNDED}} |
+| **Location** | {{ADDRESS}} |
+| **Website** | {{WEBSITE_URL}} |
+| **Primary Contact** | {{PRIMARY_CONTACT}} ({{ROLE}}) |
+| **Secondary Contact** | {{SECONDARY_CONTACT}} ({{ROLE}}) |
 
-### Secondary Audience
-- **Demographics:** [If applicable]
-- **Psychographics:** [If applicable]
+### Business Scale
+- **Size Metric:** {{KEY_METRIC}} (e.g., "350-400 active students")
+- **Team Size:** {{TEAM_SIZE}}
+- **Monthly Revenue:** {{REVENUE_RANGE}}
+- **Customer LTV:** {{CUSTOMER_LTV}}
+- **Revenue Model:** {{REVENUE_MODEL}}
 
----
-
-## Current Service Deliverables
-
-### Social Media Management
-- **Service Level:** [Foundation / Growth / Professional tier]
-- **Monthly Volume:**
-  - Instagram: [#] posts/month
-  - Facebook: [#] posts/month
-  - Google Business Profile: [#] posts/month
-  - Other: [Platform and volume]
-
-### Content Format
-- **Primary:** [Photo-first, Video-first, Mixed]
-- **Formats:** [Static images, Carousels, Reels, Stories]
-- **Design:** [Sidekick-designed graphics, Client-provided photos, Mixed]
-
-### Additional Services
-- [ ] Google Paid Ads
-- [ ] Facebook/Instagram Ads
-- [ ] SEO Services
-- [ ] Website Management
-- [ ] Email Marketing
-- [ ] Other: [Specify]
+### Engagement Details
+- **Start Date:** {{ENGAGEMENT_START}}
+- **Contract Type:** {{CONTRACT_TYPE}}
+- **Services:** {{SERVICES_LIST}}
 
 ---
 
-## Brand Voice & Messaging
+## 2. Target Audience [REQUIRED]
 
-### Brand Voice
-[Choose 3-4 that apply: Professional, Friendly, Educational, Playful, Authoritative, Warm, Technical, Casual, etc.]
+### Primary Segments
+1. **{{SEGMENT_1_NAME}}** - {{SEGMENT_1_PERCENT}}% of base
+   - Demographics: {{SEGMENT_1_DEMOGRAPHICS}}
+   - Core motivation: {{SEGMENT_1_MOTIVATION}}
 
-### Key Messaging Points
-1. [Primary message to communicate]
-2. [Secondary message]
-3. [Tertiary message]
+2. **{{SEGMENT_2_NAME}}** - {{SEGMENT_2_PERCENT}}% of base
+   - Demographics: {{SEGMENT_2_DEMOGRAPHICS}}
+   - Core motivation: {{SEGMENT_2_MOTIVATION}}
 
-### What to Avoid
-- [Topics/tones to stay away from]
-- [Competitor mentions, controversial subjects, etc.]
+3. **{{SEGMENT_3_NAME}}** - {{SEGMENT_3_PERCENT}}% of base
+   - Demographics: {{SEGMENT_3_DEMOGRAPHICS}}
+   - Core motivation: {{SEGMENT_3_MOTIVATION}}
 
----
-
-## Business Goals & KPIs
-
-### Primary Business Goals
-1. [e.g., Increase student enrollment]
-2. [e.g., Drive website traffic]
-3. [e.g., Build brand awareness]
-
-### Social Media KPIs
-- **Engagement Rate Target:** [e.g., >4%]
-- **Monthly Reach Target:** [e.g., +5% growth MoM]
-- **Lead Generation Target:** [e.g., 2-3 inquiries/month from social]
-- **Other:** [Custom KPI if applicable]
+### Geographic Focus
+- **Primary:** {{PRIMARY_GEO}}
+- **Key Areas:** {{KEY_AREAS}}
 
 ---
 
-## Key Contacts
+## 3. Brand Voice [REQUIRED]
 
-### Primary Contact
-- **Name:** [Name]
-- **Role:** [Title]
-- **Email:** [Email]
-- **Phone:** [Phone]
-- **Preferred contact method:** [Email / Phone / Text]
+### Voice Attributes
+- **Tone:** {{TONE}} (e.g., "Encouraging, knowledgeable, community-focused")
+- **Personality:** {{PERSONALITY}} (e.g., "Warm, professional, supportive")
+- **Style:** {{STYLE}} (e.g., "Accessible expert - not intimidating, not overly casual")
 
-### Secondary Contact
-- **Name:** [Name]
-- **Role:** [Title]
-- **Email:** [Email]
+### Anti-Persona (What We Are NOT)
+- NOT {{ANTI_1}} (e.g., "corporate/stiff")
+- NOT {{ANTI_2}} (e.g., "overly salesy")
+- NOT {{ANTI_3}} (e.g., "condescending to beginners")
 
-### Content Approval Process
-[Describe how content gets approved - e.g., "All content sent via email by 25th of month, approved within 3 business days"]
+### Key Messaging Pillars
+1. **"{{TAGLINE_1}}"** - {{TAGLINE_1_MEANING}}
+2. **"{{TAGLINE_2}}"** - {{TAGLINE_2_MEANING}}
+3. **"{{TAGLINE_3}}"** - {{TAGLINE_3_MEANING}}
 
----
-
-## Assets & Access
-
-### Brand Assets Location
-[e.g., "Google Drive > 03_Brand_Assets/" or "Client-provided Dropbox"]
-
-### Platform Access
-- [ ] Instagram (account handle: [@username])
-- [ ] Facebook (page name: [Page Name])
-- [ ] Google Business Profile (location: [Business Name])
-- [ ] Website (URL: [url])
-- [ ] Other: [Platform and access status]
-
-### Credentials Stored
-[e.g., "1Password shared vault" or "See 02_Onboarding_Access/CREDENTIALS.md"]
+### Unique Value Propositions
+- {{UVP_1}}
+- {{UVP_2}}
+- {{UVP_3}}
+- {{UVP_4}}
 
 ---
 
-## Notes & Special Considerations
+## 4. Content Pillars [REQUIRED]
 
-### Seasonal Considerations
-[e.g., "Back-to-school is busiest season (August-September)", "Slow period in July-August"]
-
-### Competitive Landscape
-[Key competitors and how client differentiates]
-
-### Special Requirements
-[Any unique needs, restrictions, or considerations]
-
-### Historical Context
-[Previous agencies/attempts, what worked/didn't work, reason for hiring Sidekick]
+| Pillar | % | Description | Example Content |
+|--------|---|-------------|-----------------|
+| **{{PILLAR_1_NAME}}** | {{PILLAR_1_PCT}}% | {{PILLAR_1_DESC}} | {{PILLAR_1_EXAMPLES}} |
+| **{{PILLAR_2_NAME}}** | {{PILLAR_2_PCT}}% | {{PILLAR_2_DESC}} | {{PILLAR_2_EXAMPLES}} |
+| **{{PILLAR_3_NAME}}** | {{PILLAR_3_PCT}}% | {{PILLAR_3_DESC}} | {{PILLAR_3_EXAMPLES}} |
+| **{{PILLAR_4_NAME}}** | {{PILLAR_4_PCT}}% | {{PILLAR_4_DESC}} | {{PILLAR_4_EXAMPLES}} |
+| **Promotional** | 10% | Enrollment, offers, events | Special offers, seasonal campaigns |
 
 ---
 
-## Review Schedule
+## 5. SOW Deliverables [REQUIRED]
 
-- **Monthly Check-in:** [Day of month]
-- **Quarterly Strategy Review:** [Months - e.g., March, June, Sept, Dec]
-- **Annual Contract Renewal:** [Month]
+### Social Media Deliverables
+
+**Instagram:**
+- Posts: {{IG_POSTS_PER_MONTH}} per month
+- Frequency: {{IG_FREQUENCY}}
+- Reels: {{IG_REELS_PER_MONTH}} per month
+
+**Facebook:**
+- Posts: {{FB_POSTS_PER_MONTH}} per month
+- Frequency: {{FB_FREQUENCY}}
+
+**Google Business Profile:**
+- Posts: {{GBP_POSTS_PER_MONTH}} per month
+- Frequency: {{GBP_FREQUENCY}}
+
+**Total Monthly:** {{TOTAL_POSTS}} posts
+
+### Other Services (if applicable)
+- {{OTHER_SERVICE_1}}
+- {{OTHER_SERVICE_2}}
 
 ---
 
-*This profile should be updated whenever there are significant changes to deliverables, goals, or contact information.*
+## 6. Platform Strategy
+
+### Primary Platforms (80% effort)
+1. **Instagram** - {{IG_PURPOSE}}
+2. **Facebook** - {{FB_PURPOSE}}
+3. **Google Business Profile** - {{GBP_PURPOSE}}
+
+### Secondary Platforms (20% effort)
+1. **{{SECONDARY_PLATFORM_1}}** - {{SECONDARY_1_PURPOSE}}
+
+### Posting Schedule
+| Platform | Best Days | Best Times |
+|----------|-----------|------------|
+| Instagram | {{IG_BEST_DAYS}} | {{IG_BEST_TIMES}} |
+| Facebook | {{FB_BEST_DAYS}} | {{FB_BEST_TIMES}} |
+| GBP | {{GBP_BEST_DAYS}} | {{GBP_BEST_TIMES}} |
+
+---
+
+## 7. KPIs & Goals
+
+### Social Media Goals
+- **Follower Growth:** {{FOLLOWER_GOAL}}
+- **Engagement Rate:** {{ENGAGEMENT_GOAL}}
+- **Click-through Rate:** {{CTR_GOAL}}
+
+### Conversion Goals
+- **Inquiries from Social:** {{INQUIRY_GOAL}} monthly
+- **Conversions from Social:** {{CONVERSION_GOAL}} monthly
+
+### GBP Goals
+- **Search Impressions:** {{GBP_IMPRESSIONS_GOAL}} monthly
+- **Website Clicks:** {{GBP_CLICKS_GOAL}} monthly
+- **New Reviews:** {{GBP_REVIEWS_GOAL}} monthly
+
+---
+
+## 8. Competitive Advantages
+
+### Differentiation Points
+1. {{DIFFERENTIATOR_1}}
+2. {{DIFFERENTIATOR_2}}
+3. {{DIFFERENTIATOR_3}}
+4. {{DIFFERENTIATOR_4}}
+
+### Key Competitors
+- {{COMPETITOR_1}}
+- {{COMPETITOR_2}}
+- {{COMPETITOR_3}}
+
+---
+
+## 9. Guidelines & Constraints
+
+### Content Guidelines
+- {{GUIDELINE_1}}
+- {{GUIDELINE_2}}
+- {{GUIDELINE_3}}
+
+### Sensitive Topics to Avoid
+- {{AVOID_1}}
+- {{AVOID_2}}
+
+### Approval Requirements
+- **Requires Approval:** {{NEEDS_APPROVAL}}
+- **No Approval Needed:** {{NO_APPROVAL_NEEDED}}
+- **Primary Approver:** {{APPROVER_NAME}}
+- **Response Time:** {{APPROVAL_TIME}}
+
+---
+
+## 10. File Locations
+
+### Google Drive Structure
+**Base Path:** `/My Drive/01_Sidekick Marketer/2. Clients/01_Clients/client-{{SHORT_CODE_LOWER}}/`
+
+```
+/client-{{SHORT_CODE_LOWER}}/
+├── 00_{{SHORT_CODE}}_CLIENT_PROFILE.md (this file)
+├── 01 - Admin & Legal/
+├── 02 - Onboarding & Access/
+├── 03 - Brand & Assets/
+├── 04 - Marketing Deliverables/
+├── 05 - Reports & Analytics/
+├── 07_Marketing_Channels/
+│   ├── Social_Media/
+│   │   ├── Instagram/
+│   │   ├── Facebook/
+│   │   └── GBP/
+│   ├── LinkedIn/
+│   ├── SEO/
+│   ├── Email/
+│   └── Paid_Ads/
+└── reports/ (auto-generated by skills)
+```
+
+---
+
+## 11. Notion Workspace
+
+### Client Pages & Databases
+- **Content Planning Page:** {{NOTION_CONTENT_PAGE}}
+- **Campaigns Database:** {{NOTION_CAMPAIGNS_DB}}
+- **Performance Data:** {{NOTION_PERFORMANCE_DB}}
+
+---
+
+## 12. Content Templates
+
+### Template 1: {{TEMPLATE_1_NAME}}
+```
+{{TEMPLATE_1_CONTENT}}
+```
+
+### Template 2: {{TEMPLATE_2_NAME}}
+```
+{{TEMPLATE_2_CONTENT}}
+```
+
+---
+
+**This profile should be referenced by all Claude Skills generating content for {{CLIENT_NAME}}.**
+
+---
+
+## Validation Checklist
+
+Before using this profile with automation skills, verify:
+
+- [ ] All `{{PLACEHOLDER}}` fields have been replaced
+- [ ] Business Core section is complete
+- [ ] Target Audience has at least 2 segments defined
+- [ ] Brand Voice tone and anti-persona defined
+- [ ] Content Pillars add up to 100%
+- [ ] SOW deliverables match contract
+- [ ] File paths are correct for this client

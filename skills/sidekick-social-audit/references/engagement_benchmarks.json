@@ -1,0 +1,5 @@
+{
+  "instagram": { "healthy_min": 3.0, "healthy_max": 5.0, "note": "Based on Reach" },
+  "facebook": { "healthy_min": 1.0, "healthy_max": 3.0 },
+  "google_business_profile": { "healthy_min": 2.0, "healthy_max": 4.0 }
+}

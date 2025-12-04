@@ -1,404 +1,424 @@
 #!/usr/bin/env python3
 """
-Parse Social Data Script
-Parses analytics files (CSV/XLSX) and post PDFs into unified JSON format
+Social Data Parser - Sidekick Social Audit
+Version: 2.0
+Parses CSV and Excel exports from Instagram, Facebook, and Google Business Profile.
 
-Usage:
-    python parse_social_data.py --analytics path/to/analytics.csv --output data.json
-    python parse_social_data.py --search-dir path/to/02_Performance_Data/ --output data.json
-    python parse_social_data.py --pdfs path/to/*.pdf --output data.json --ocr
+Key Features:
+- CSV and Excel (.xlsx) support
+- Content-based deduplication (not just date+platform)
+- Column header-based platform detection fallback
+- Unique post_id for tracking
 """
-
 import argparse
 import json
 import csv
-import re
-import sys
+import hashlib
+import logging
 from pathlib import Path
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from collections import defaultdict
+
+# Try importing openpyxl for Excel support
+try:
+    import openpyxl
+    EXCEL_SUPPORT = True
+except ImportError:
+    EXCEL_SUPPORT = False
+
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
 
 
 class SocialDataParser:
-    """Parses social media data from various sources"""
-    
-    def __init__(self):
-        self.posts = []
-        self.errors = []
-        
-    def parse_csv(self, file_path: Path) -> List[Dict[str, Any]]:
-        """Parse CSV analytics file"""
-        
-        posts = []
-        
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                # Try to detect delimiter
-                sample = f.read(1024)
-                f.seek(0)
-                
-                # Check for common delimiters
-                if ',' in sample:
-                    delimiter = ','
-                elif '\t' in sample:
-                    delimiter = '\t'
-                elif ';' in sample:
-                    delimiter = ';'
-                else:
-                    delimiter = ','
-                
-                reader = csv.DictReader(f, delimiter=delimiter)
-                
-                for row_num, row in enumerate(reader, start=2):
+    """Parses and normalizes social media export data."""
+
+    # Column patterns that indicate a specific platform
+    PLATFORM_COLUMN_HINTS = {
+        'instagram': ['instagram', 'ig reach', 'ig impressions', 'reels'],
+        'facebook': ['facebook', 'fb reach', 'fb impressions', 'page likes'],
+        'google_business_profile': ['gbp', 'google business', 'local post', 'store code'],
+    }
+
+    def __init__(self, verbose=True, default_platform=None):
+        self.verbose = verbose
+        self.default_platform = default_platform
+        self.stats = {
+            'files_processed': 0,
+            'files_failed': 0,
+            'files_skipped': 0,
+            'posts_parsed': 0,
+            'posts_skipped': 0,
+            'duplicates_removed': 0,
+        }
+        self.skipped_files = []  # Track why files were skipped
+
+        if not EXCEL_SUPPORT:
+            logger.warning("openpyxl not installed. Excel files will be skipped. Run: pip install openpyxl")
+
+    def _generate_post_id(self, post):
+        """Generate unique ID from date + platform + content hash."""
+        content = post.get('caption', '') or post.get('post_type', '') or ''
+        raw = f"{post['date']}_{post['platform']}_{content[:100]}"
+        return hashlib.md5(raw.encode()).hexdigest()[:12]
+
+    def _smart_deduplicate(self, posts):
+        """Deduplicate by post_id (content-aware), not just date+platform."""
+        seen = {}
+        duplicates = 0
+
+        for post in posts:
+            post_id = self._generate_post_id(post)
+            post['post_id'] = post_id
+
+            if post_id in seen:
+                # Keep the version with more data
+                existing = seen[post_id]
+                existing_fields = sum(1 for v in existing.values() if v)
+                new_fields = sum(1 for v in post.values() if v)
+                if new_fields > existing_fields:
+                    seen[post_id] = post
+                duplicates += 1
+            else:
+                seen[post_id] = post
+
+        self.stats['duplicates_removed'] = duplicates
+        return list(seen.values())
+
+    def _detect_platform_from_columns(self, headers):
+        """Detect platform from column names when filename doesn't indicate it."""
+        headers_lower = ' '.join(str(h).lower() for h in headers if h)
+
+        for platform, hints in self.PLATFORM_COLUMN_HINTS.items():
+            for hint in hints:
+                if hint in headers_lower:
+                    return platform
+        return None
+
+    def _detect_platform(self, filename, headers=None):
+        """Detect platform from filename, then fallback to column headers."""
+        fn = filename.lower()
+
+        # 1. Check filename first (most reliable)
+        if 'gbp' in fn or 'google_business' in fn or 'googlebusiness' in fn or '_gbp-' in fn or '_gbp_' in fn:
+            return 'google_business_profile'
+        if 'instagram' in fn or '_ig_' in fn or '_ig-' in fn or 'ig_' in fn or '-ig-' in fn:
+            return 'instagram'
+        if 'facebook' in fn or '_fb_' in fn or '_fb-' in fn or 'fb_' in fn or '-fb-' in fn:
+            return 'facebook'
+
+        # 2. Fallback to column headers
+        if headers:
+            detected = self._detect_platform_from_columns(headers)
+            if detected:
+                return detected
+
+        # 3. Use default platform if specified
+        if self.default_platform:
+            return self.default_platform
+
+        return None
+
+    def _normalize_post(self, row, filename, platform):
+        """Normalize a single row into standard post format."""
+        # Skip aggregate/summary rows
+        if any(k in row for k in ['Store code', 'Business name']):
+            if platform == 'google_business_profile':
+                # These are valid GBP columns, don't skip the whole row
+                pass
+            else:
+                return None
+
+        # Normalize keys to lower case for searching
+        row_map = {str(k).lower().strip(): k for k in row.keys() if k}
+
+        # Date Finding Logic
+        date = None
+        date_keys = ['publish time', 'publish date', 'posted date', 'created', 'date', 'timestamp', 'post date']
+        for key in date_keys:
+            if key in row_map:
+                raw_val = str(row[row_map[key]] or '')
+                if 'lifetime' in raw_val.lower() or not raw_val.strip():
+                    continue
+
+                # Try multiple date formats
+                for fmt in [
+                    '%m/%d/%Y %H:%M', '%Y-%m-%d', '%m/%d/%Y', '%Y-%m-%d %H:%M:%S',
+                    '%B %d, %Y', '%Y-%m-%d %H:%M', '%d/%m/%Y', '%Y/%m/%d'
+                ]:
                     try:
-                        post = self._normalize_row(row, file_path.name)
-                        if post:
-                            posts.append(post)
-                    except Exception as e:
-                        self.errors.append(f"Row {row_num} in {file_path.name}: {e}")
-            
-            print(f"✅ Parsed {len(posts)} posts from {file_path.name}")
-            
-        except Exception as e:
-            self.errors.append(f"Failed to parse {file_path.name}: {e}")
-        
-        return posts
-    
-    def _normalize_row(self, row: Dict[str, str], filename: str) -> Optional[Dict[str, Any]]:
-        """Normalize a CSV row to standard format"""
-        
-        # Detect platform from filename or content
-        platform = self._detect_platform(filename, row)
-        
-        # Try to extract date
-        date = self._extract_date(row)
+                        date = datetime.strptime(raw_val.strip(), fmt).strftime('%Y-%m-%d')
+                        break
+                    except ValueError:
+                        continue
+                if date:
+                    break
+
         if not date:
             return None
-        
-        # Try to extract engagement metrics
+
         post = {
             'date': date,
             'platform': platform,
-            'source_file': filename
+            'source_file': filename,
         }
-        
-        # Map common column variations
-        mappings = {
-            'post_type': ['type', 'post_type', 'media_type', 'format', 'post type'],
-            'caption': ['caption', 'description', 'text', 'post text', 'content'],
-            'likes': ['likes', 'like count', 'reactions', 'reaction count'],
-            'comments': ['comments', 'comment count', 'comments count'],
-            'shares': ['shares', 'share count', 'shares count'],
-            'saves': ['saves', 'save count', 'saved', 'bookmarks'],
-            'reach': ['reach', 'accounts reached', 'unique viewers'],
-            'impressions': ['impressions', 'views', 'total views'],
-            'link_clicks': ['link clicks', 'clicks', 'website clicks'],
-            'engagement_rate': ['engagement rate', 'engagement', 'engagement %']
+
+        # Metric Mapping
+        mapping = {
+            'likes': ['likes', 'reactions', 'like count', 'total likes'],
+            'comments': ['comments', 'comment count', 'total comments'],
+            'shares': ['shares', 'share count', 'total shares'],
+            'reach': ['reach', 'impressions', 'views', 'total reach'],
+            'post_type': ['type', 'format', 'post type', 'media type'],
+            'caption': ['caption', 'text', 'description', 'message', 'content'],
         }
-        
-        # Extract all available fields
-        row_lower = {k.lower().strip(): v for k, v in row.items()}
-        
-        for field, variations in mappings.items():
-            for variation in variations:
-                if variation in row_lower:
-                    value = row_lower[variation]
-                    
-                    # Clean numeric fields
-                    if field in ['likes', 'comments', 'shares', 'saves', 'reach', 'impressions', 'link_clicks']:
-                        post[field] = self._parse_number(value)
-                    elif field == 'engagement_rate':
-                        post[field] = self._parse_percentage(value)
-                    else:
-                        post[field] = value
+
+        for field, lookup_keys in mapping.items():
+            for key in lookup_keys:
+                if key in row_map:
+                    val = row[row_map[key]]
+                    try:
+                        if field in ['likes', 'comments', 'shares', 'reach']:
+                            cleaned = str(val or '0').replace(',', '').replace('$', '').strip()
+                            post[field] = int(float(cleaned or 0))
+                        else:
+                            post[field] = str(val or '').strip()
+                    except (ValueError, TypeError):
+                        post[field] = 0 if field in ['likes', 'comments', 'shares', 'reach'] else ''
                     break
-        
-        # Calculate engagement rate if not provided
-        if 'engagement_rate' not in post and 'reach' in post and post.get('reach', 0) > 0:
-            total_engagement = sum([
-                post.get('likes', 0),
-                post.get('comments', 0),
-                post.get('shares', 0),
-                post.get('saves', 0)
-            ])
-            post['engagement_rate'] = round((total_engagement / post['reach']) * 100, 2)
-        
-        return post if len(post) > 3 else None
-    
-    def _detect_platform(self, filename: str, row: Dict[str, str]) -> str:
-        """Detect platform from filename or row content"""
-        
-        filename_lower = filename.lower()
-        
-        if 'instagram' in filename_lower or 'ig' in filename_lower:
-            return 'instagram'
-        elif 'facebook' in filename_lower or 'fb' in filename_lower:
-            return 'facebook'
-        elif 'google' in filename_lower or 'gbp' in filename_lower or 'gmb' in filename_lower:
-            return 'google_business_profile'
-        elif 'linkedin' in filename_lower:
-            return 'linkedin'
-        elif 'twitter' in filename_lower or 'x.com' in filename_lower:
-            return 'twitter'
-        
-        # Try to detect from row content
-        row_str = ' '.join(str(v) for v in row.values()).lower()
-        
-        if 'instagram' in row_str:
-            return 'instagram'
-        elif 'facebook' in row_str:
-            return 'facebook'
-        
-        return 'unknown'
-    
-    def _extract_date(self, row: Dict[str, str]) -> Optional[str]:
-        """Extract date from row"""
-        
-        date_fields = ['date', 'posted date', 'publish date', 'created', 'timestamp', 'posted']
-        
-        row_lower = {k.lower().strip(): v for k, v in row.items()}
-        
-        for field in date_fields:
-            if field in row_lower:
-                date_str = row_lower[field]
-                parsed_date = self._parse_date(date_str)
-                if parsed_date:
-                    return parsed_date
-        
-        return None
-    
-    def _parse_date(self, date_str: str) -> Optional[str]:
-        """Parse date string to YYYY-MM-DD format"""
-        
-        if not date_str or date_str.strip() == '':
-            return None
-        
-        # Try common date formats
-        formats = [
-            '%Y-%m-%d',
-            '%m/%d/%Y',
-            '%d/%m/%Y',
-            '%Y/%m/%d',
-            '%B %d, %Y',
-            '%b %d, %Y',
-            '%Y-%m-%d %H:%M:%S',
-            '%m/%d/%Y %H:%M',
-        ]
-        
-        for fmt in formats:
-            try:
-                dt = datetime.strptime(date_str.strip(), fmt)
-                return dt.strftime('%Y-%m-%d')
-            except ValueError:
-                continue
-        
-        # Try to extract YYYY-MM-DD pattern
-        match = re.search(r'(\d{4})-(\d{2})-(\d{2})', date_str)
-        if match:
-            return match.group(0)
-        
-        return None
-    
-    def _parse_number(self, value: str) -> int:
-        """Parse number from string (handles commas, K, M suffixes)"""
-        
-        if isinstance(value, (int, float)):
-            return int(value)
-        
-        if not value or value.strip() == '':
-            return 0
-        
-        # Remove common formatting
-        value = str(value).replace(',', '').replace(' ', '').strip()
-        
-        # Handle K/M suffixes
-        if value.endswith('K') or value.endswith('k'):
-            return int(float(value[:-1]) * 1000)
-        elif value.endswith('M') or value.endswith('m'):
-            return int(float(value[:-1]) * 1000000)
-        
-        try:
-            return int(float(value))
-        except ValueError:
-            return 0
-    
-    def _parse_percentage(self, value: str) -> float:
-        """Parse percentage from string"""
-        
-        if isinstance(value, (int, float)):
-            return float(value)
-        
-        if not value or value.strip() == '':
-            return 0.0
-        
-        # Remove % sign and convert
-        value = str(value).replace('%', '').strip()
-        
-        try:
-            return float(value)
-        except ValueError:
-            return 0.0
-    
-    def parse_pdf(self, file_path: Path, use_ocr: bool = False) -> List[Dict[str, Any]]:
-        """Parse PDF post archive (placeholder - requires PDF libraries)"""
-        
-        # Note: Full PDF parsing would require PyPDF2 and pytesseract
-        # For now, this is a placeholder that extracts basic info
-        
+
+        return post
+
+    def _is_garbage_row(self, row):
+        """Detects summary/aggregate rows often found in exports."""
+        s = ' '.join(str(v).lower() for v in row.values() if v)
+        garbage_indicators = ['number of', 'total count', 'interactions with', 'sum of', 'average']
+        return any(x in s for x in garbage_indicators)
+
+    def parse_csv(self, path):
+        """Parse a CSV file into normalized posts."""
         posts = []
-        
         try:
-            # Extract date from filename if possible
-            date_match = re.search(r'(\d{4})-(\d{2})', file_path.name)
-            if date_match:
-                year_month = f"{date_match.group(1)}-{date_match.group(2)}"
-                
-                posts.append({
-                    'source_file': file_path.name,
-                    'source_type': 'pdf',
-                    'date_range': year_month,
-                    'note': 'PDF parsing requires manual review or full OCR setup'
-                })
-                
-                print(f"⚠️  {file_path.name}: PDF detected but not fully parsed")
-                print(f"   Install PyPDF2 and pytesseract for full PDF extraction")
-            
+            with open(path, 'r', encoding='utf-8-sig', errors='replace') as f:
+                sample = f.read(2048)
+                f.seek(0)
+                delim = ',' if sample.count(',') > sample.count(';') else ';'
+                reader = csv.DictReader(f, delimiter=delim)
+                headers = reader.fieldnames or []
+
+                platform = self._detect_platform(path.name, headers)
+                if not platform:
+                    self.stats['files_skipped'] += 1
+                    self.skipped_files.append({
+                        'file': path.name,
+                        'reason': 'Could not detect platform from filename or columns'
+                    })
+                    return []
+
+                for row in reader:
+                    if self._is_garbage_row(row):
+                        continue
+                    p = self._normalize_post(row, path.name, platform)
+                    if p:
+                        posts.append(p)
+                        self.stats['posts_parsed'] += 1
+                    else:
+                        self.stats['posts_skipped'] += 1
+
+            self.stats['files_processed'] += 1
         except Exception as e:
-            self.errors.append(f"Failed to process PDF {file_path.name}: {e}")
-        
+            self.stats['files_failed'] += 1
+            logger.error(f"Failed CSV {path.name}: {e}")
         return posts
-    
-    def search_directory(self, directory: Path) -> List[Dict[str, Any]]:
-        """Search directory for analytics files and parse them"""
-        
-        all_posts = []
-        
-        # Find all CSV and XLSX files
-        csv_files = list(directory.glob("*.csv"))
-        xlsx_files = list(directory.glob("*.xlsx"))
-        
-        print(f"\n📂 Searching {directory.name}...")
-        print(f"   Found {len(csv_files)} CSV files, {len(xlsx_files)} XLSX files\n")
-        
-        # Parse CSV files
-        for csv_file in csv_files:
-            posts = self.parse_csv(csv_file)
-            all_posts.extend(posts)
-        
-        # Note about XLSX files
-        if xlsx_files:
-            print(f"⚠️  XLSX files found but not parsed (install openpyxl for XLSX support)")
-            print(f"   Convert to CSV or install: pip install openpyxl\n")
-        
-        return all_posts
-    
-    def save_json(self, posts: List[Dict[str, Any]], output_path: Path):
-        """Save parsed posts to JSON"""
-        
-        # Sort by date
-        posts_sorted = sorted(posts, key=lambda x: x.get('date', ''))
-        
-        output = {
-            'metadata': {
-                'generated_at': datetime.now().isoformat(),
-                'total_posts': len(posts_sorted),
-                'date_range': {
-                    'start': posts_sorted[0].get('date') if posts_sorted else None,
-                    'end': posts_sorted[-1].get('date') if posts_sorted else None
-                }
-            },
-            'posts': posts_sorted
+
+    def parse_excel(self, path):
+        """Parse an Excel file into normalized posts."""
+        posts = []
+        if not EXCEL_SUPPORT:
+            return []
+
+        try:
+            wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+
+            for sheet_name in wb.sheetnames:
+                sheet = wb[sheet_name]
+                rows = list(sheet.iter_rows(values_only=True))
+                if not rows:
+                    continue
+
+                headers = [str(h) if h else '' for h in rows[0]]
+                platform = self._detect_platform(path.name, headers)
+
+                if not platform:
+                    # Try detecting from sheet name
+                    sheet_lower = sheet_name.lower()
+                    if 'instagram' in sheet_lower or 'ig' in sheet_lower:
+                        platform = 'instagram'
+                    elif 'facebook' in sheet_lower or 'fb' in sheet_lower:
+                        platform = 'facebook'
+                    elif 'gbp' in sheet_lower or 'google' in sheet_lower:
+                        platform = 'google_business_profile'
+
+                if not platform:
+                    self.skipped_files.append({
+                        'file': f"{path.name} / {sheet_name}",
+                        'reason': 'Could not detect platform'
+                    })
+                    continue
+
+                for row_data in rows[1:]:
+                    row_dict = {}
+                    for i, h in enumerate(headers):
+                        if h and i < len(row_data):
+                            row_dict[h] = row_data[i]
+
+                    if self._is_garbage_row(row_dict):
+                        continue
+
+                    p = self._normalize_post(row_dict, path.name, platform)
+                    if p:
+                        posts.append(p)
+                        self.stats['posts_parsed'] += 1
+                    else:
+                        self.stats['posts_skipped'] += 1
+
+            if posts:
+                self.stats['files_processed'] += 1
+            else:
+                self.stats['files_skipped'] += 1
+
+        except Exception as e:
+            self.stats['files_failed'] += 1
+            logger.error(f"Failed Excel {path.name}: {e}")
+
+        return posts
+
+    def run(self, search_dir, output):
+        """Run the full parsing pipeline."""
+        posts = []
+        path = Path(search_dir)
+
+        if not path.exists():
+            logger.error(f"Directory not found: {search_dir}")
+            return
+
+        # 0. First, enumerate ALL files in directory (nothing missed)
+        all_files = list(path.rglob('*'))
+        all_files = [f for f in all_files if f.is_file()]
+
+        # Categorize files
+        processable_extensions = {'.csv', '.xlsx', '.xls'}
+        unprocessable_extensions = {'.json', '.md', '.txt', '.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg'}
+        skip_patterns = {'.DS_Store', '__pycache__', '.git'}
+
+        file_manifest = {
+            'total_found': len(all_files),
+            'processable': [],
+            'unprocessable': [],
+            'skipped': [],
         }
-        
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(output, f, indent=2)
-        
-        print(f"\n✅ Saved {len(posts_sorted)} posts to {output_path}")
-        
-        if self.errors:
-            print(f"\n⚠️  {len(self.errors)} errors occurred during parsing:")
-            for error in self.errors[:5]:  # Show first 5 errors
-                print(f"   {error}")
-            if len(self.errors) > 5:
-                print(f"   ... and {len(self.errors) - 5} more")
+
+        for f in all_files:
+            if any(skip in str(f) for skip in skip_patterns):
+                file_manifest['skipped'].append((f.name, 'system file'))
+                continue
+            ext = f.suffix.lower()
+            if ext in processable_extensions:
+                file_manifest['processable'].append(f)
+            elif ext in unprocessable_extensions:
+                file_manifest['unprocessable'].append((f.name, f'not social data ({ext})'))
+            elif ext:
+                file_manifest['skipped'].append((f.name, f'unknown ({ext})'))
+
+        # Log complete file inventory
+        logger.info(f"📁 FILE INVENTORY: {file_manifest['total_found']} total files found")
+        logger.info(f"   ✓ Processable: {len(file_manifest['processable'])} files")
+        if file_manifest['unprocessable']:
+            logger.info(f"   ⚠️ Unprocessable: {len(file_manifest['unprocessable'])} files")
+        if file_manifest['skipped']:
+            logger.info(f"   ⏭️ Skipped: {len(file_manifest['skipped'])} files")
+
+        # Store for output
+        self.file_manifest = file_manifest
+
+        # 1. Parse CSVs
+        csv_files = [f for f in file_manifest['processable'] if f.suffix.lower() == '.csv']
+        for f in csv_files:
+            posts.extend(self.parse_csv(f))
+
+        # 2. Parse Excels
+        if EXCEL_SUPPORT:
+            xlsx_files = [f for f in file_manifest['processable'] if f.suffix.lower() in {'.xlsx', '.xls'}]
+            for f in xlsx_files:
+                posts.extend(self.parse_excel(f))
+
+        # 3. Deduplicate (content-aware)
+        unique = self._smart_deduplicate(posts)
+        unique.sort(key=lambda x: x['date'])
+
+        # 4. Save output
+        out = Path(output)
+        out.parent.mkdir(parents=True, exist_ok=True)
+
+        result = {
+            'posts': unique,
+            'stats': self.stats,
+            'skipped_files': self.skipped_files,
+            'file_manifest': {
+                'total_found': self.file_manifest['total_found'],
+                'processable_count': len(self.file_manifest['processable']),
+                'processable_files': [str(f.name) for f in self.file_manifest['processable']],
+                'unprocessable': self.file_manifest['unprocessable'],
+                'skipped': self.file_manifest['skipped'],
+            },
+            'generated_at': datetime.now().isoformat(),
+        }
+
+        with open(out, 'w') as f:
+            json.dump(result, f, indent=2, default=str)
+
+        # 5. Summary logging
+        logger.info("=" * 60)
+        logger.info("✅ PARSING COMPLETE")
+        logger.info(f"   📊 Parsed {len(unique)} unique posts from {self.stats['files_processed']} files")
+        if self.stats['duplicates_removed']:
+            logger.info(f"   🔄 Removed {self.stats['duplicates_removed']} duplicates")
+        if self.stats['files_skipped']:
+            logger.warning(f"   ⏭️ Skipped {self.stats['files_skipped']} files (unknown platform)")
+        if self.stats['files_failed']:
+            logger.error(f"   ❌ Failed {self.stats['files_failed']} files")
+
+        # File manifest summary
+        if self.file_manifest['unprocessable']:
+            logger.warning(f"   ⚠️ REVIEW MANUALLY: {len(self.file_manifest['unprocessable'])} files not processed:")
+            for fname, reason in self.file_manifest['unprocessable'][:5]:
+                logger.warning(f"      - {fname}: {reason}")
+            if len(self.file_manifest['unprocessable']) > 5:
+                logger.warning(f"      ... and {len(self.file_manifest['unprocessable']) - 5} more")
+
+        if self.skipped_files and self.verbose:
+            logger.info("Platform detection failures:")
+            for skip in self.skipped_files:
+                logger.info(f"  - {skip['file']}: {skip['reason']}")
 
 
-def main():
+if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="Parse social media analytics files into unified JSON format"
+        description='Parse social media export files (CSV, Excel) into normalized JSON'
     )
+    parser.add_argument('--search-dir', required=True, help='Directory containing export files')
+    parser.add_argument('--output', required=True, help='Output JSON file path')
     parser.add_argument(
-        '--analytics',
-        nargs='+',
-        help='One or more analytics CSV files to parse'
+        '--platform',
+        choices=['instagram', 'facebook', 'google_business_profile'],
+        help='Default platform if auto-detection fails'
     )
-    parser.add_argument(
-        '--search-dir',
-        help='Directory to search for analytics files'
-    )
-    parser.add_argument(
-        '--pdfs',
-        nargs='+',
-        help='One or more PDF files to parse (requires OCR libraries)'
-    )
-    parser.add_argument(
-        '--ocr',
-        action='store_true',
-        help='Use OCR for PDF text extraction (requires pytesseract)'
-    )
-    parser.add_argument(
-        '--output',
-        required=True,
-        help='Output JSON file path'
-    )
-    
+    parser.add_argument('--quiet', action='store_true', help='Reduce logging output')
+
     args = parser.parse_args()
-    
-    if not args.analytics and not args.search_dir and not args.pdfs:
-        print("❌ Error: Must provide --analytics, --search-dir, or --pdfs")
-        sys.exit(1)
-    
-    # Parse data
-    data_parser = SocialDataParser()
-    all_posts = []
-    
-    # Parse analytics files
-    if args.analytics:
-        for file_path in args.analytics:
-            path = Path(file_path)
-            if path.exists():
-                posts = data_parser.parse_csv(path)
-                all_posts.extend(posts)
-            else:
-                print(f"⚠️  File not found: {file_path}")
-    
-    # Search directory
-    if args.search_dir:
-        search_path = Path(args.search_dir)
-        if search_path.exists() and search_path.is_dir():
-            posts = data_parser.search_directory(search_path)
-            all_posts.extend(posts)
-        else:
-            print(f"❌ Directory not found: {args.search_dir}")
-            sys.exit(1)
-    
-    # Parse PDFs
-    if args.pdfs:
-        for file_path in args.pdfs:
-            path = Path(file_path)
-            if path.exists():
-                posts = data_parser.parse_pdf(path, args.ocr)
-                all_posts.extend(posts)
-            else:
-                print(f"⚠️  File not found: {file_path}")
-    
-    # Save results
-    if all_posts:
-        data_parser.save_json(all_posts, Path(args.output))
-    else:
-        print("\n❌ No posts were successfully parsed")
-        sys.exit(1)
 
-
-if __name__ == "__main__":
-    main()
+    parser_instance = SocialDataParser(
+        verbose=not args.quiet,
+        default_platform=args.platform
+    )
+    parser_instance.run(args.search_dir, args.output)
